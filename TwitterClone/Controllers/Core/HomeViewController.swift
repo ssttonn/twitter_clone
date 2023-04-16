@@ -8,7 +8,7 @@
 import UIKit
 
 class HomeViewController: UIViewController {
-
+    
     private let timelineTableView: UITableView = {
         let table = UITableView()
         table.register(TweetTableViewCell.self, forCellReuseIdentifier: TweetTableViewCell.identifier)
@@ -18,9 +18,11 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(timelineTableView)
-
+        
         timelineTableView.delegate = self
         timelineTableView.dataSource = self
+        timelineTableView.allowsSelection = false
+        configureNavigationBar()
     }
     
     override func viewDidLayoutSubviews() {
@@ -28,7 +30,24 @@ class HomeViewController: UIViewController {
         timelineTableView.frame = view.bounds
     }
     
-
+    private func configureNavigationBar(){
+        let size: CGFloat = 32
+        
+        let logoImageView = UIImageView(image: UIImage(named: "twitterLogo"))
+        
+        let middleView = UIView(frame: CGRect(x: 0, y: 0, width: size, height: size))
+        
+        middleView.addSubview(logoImageView)
+        
+        navigationItem.titleView = middleView
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "person"), style: .plain, target: self, action: #selector(didTapProfile))
+    }
+    
+    @objc private func didTapProfile(){
+        let vc = ProfileViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
 }
 
 extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
@@ -41,9 +60,31 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
             return UITableViewCell()
         }
         
-      
+        cell.delegate = self
         
         return cell
     }
+    
+    
+    
+}
+
+extension HomeViewController: TweetTableViewCellDelegate{
+    func tweetTableViewCellDidTapReply() {
+        print("DidReply")
+    }
+    
+    func tweetTableViewCellDidTapRetweet() {
+        print("DidRetweet")
+    }
+    
+    func tweetTableViewCellDidTapLike() {
+        print("DidLike")
+    }
+    
+    func tweetTableViewCellDidTapShare() {
+        print("DidShare")
+    }
+    
     
 }
