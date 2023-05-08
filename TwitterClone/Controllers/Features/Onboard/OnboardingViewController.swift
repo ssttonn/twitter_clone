@@ -72,6 +72,7 @@ class OnboardingViewController: UIViewController {
         view.backgroundColor = .systemBackground
         
         createAccountButton.addTarget(self, action: #selector(onRegisterButtonClicked), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(onLoginButtonClicked), for: .touchUpInside)
         
         view.addSubview(welcomeLabel)
         view.addSubview(createAccountButton)
@@ -85,6 +86,11 @@ class OnboardingViewController: UIViewController {
     
     @objc private func onRegisterButtonClicked(){
         let vc = RegisterViewController()
+        navigationController?.show(vc, sender: self)
+    }
+    
+    @objc private func onLoginButtonClicked(){
+        let vc = LoginViewController()
         navigationController?.show(vc, sender: self)
     }
     

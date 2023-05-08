@@ -10,7 +10,7 @@ import Combine
 
 class RegisterViewController: UIViewController {
     
-    private let viewModel = RegisterViewModel()
+    private let viewModel = AuthenticationViewModel()
     
     private var subscriptions: Set<AnyCancellable> = []
     
@@ -68,6 +68,18 @@ class RegisterViewController: UIViewController {
         view.addSubview(registerButton)
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapToDismiss)))
         
+        viewModel.$errorString.sink {[weak self] errorString in
+            guard let errorString = errorString else {return}
+            
+            self?.showErrorAlert(errorString: errorString)
+        }.store(in: &subscriptions)
+        
+        viewModel.$user.sink { [weak self] user in
+            guard user != nil else {return}
+            guard let vc = self?.navigationController?.viewControllers.first as? OnboardingViewController else {return}
+            vc.dismiss(animated: true)
+        }.store(in: &subscriptions)
+        
         configureConstraints()
         bindViews()
     }
@@ -91,6 +103,13 @@ class RegisterViewController: UIViewController {
     @objc private func onPasswordChanged(){
         viewModel.password = passwordTextField.text
         viewModel.validateRegistrationForm()
+    }
+    
+    private func showErrorAlert(errorString: String){
+        let vc = UIAlertController(title: "Error", message: errorString, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default)
+        vc.addAction(okAction)
+        present(vc, animated: true)
     }
     
     @objc private func didTapRegister(){

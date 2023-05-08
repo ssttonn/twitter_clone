@@ -9,11 +9,12 @@ import Foundation
 import FirebaseAuth
 import Combine
 
-final class RegisterViewModel: ObservableObject{
+final class AuthenticationViewModel: ObservableObject{
     @Published var email: String?
     @Published var password: String?
     @Published var isRegistrationFormValid: Bool = false
     @Published var user: User?
+    @Published var errorString: String?
     private var subscriptions: Set<AnyCancellable> = []
     
     func validateRegistrationForm(){
@@ -31,10 +32,22 @@ final class RegisterViewModel: ObservableObject{
     }
     
     func registerUser(){
-        AuthManager.shared.registerUser(email: email!, password: password!).sink{_ in
-            
-        } receiveValue: { user in
-            self.user = user
+        AuthManager.shared.registerUser(email: email!, password: password!).sink{ [weak self] completion in
+            if case .failure(let error) = completion {
+                self?.errorString = error.localizedDescription
+            }
+        } receiveValue: {[weak self] user in
+            self?.user = user
+        }.store(in: &subscriptions)
+    }
+    
+    func login(){
+        AuthManager.shared.login(email: email!, password: password!).sink{ [weak self] completion in
+            if case .failure(let error) = completion {
+                self?.errorString = error.localizedDescription
+            }
+        } receiveValue: { [weak self] user in
+            self?.user = user
         }.store(in: &subscriptions)
     }
 }

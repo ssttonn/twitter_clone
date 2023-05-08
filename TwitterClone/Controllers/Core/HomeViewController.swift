@@ -43,11 +43,22 @@ class HomeViewController: UIViewController {
         navigationItem.titleView = middleView
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "person"), style: .plain, target: self, action: #selector(didTapProfile))
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "rectangle.portrait.and.arrow.forward"), style: .plain, target: self, action: #selector(didTapLogout))
     }
     
     @objc private func didTapProfile(){
         let vc = ProfileViewController()
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    @objc private func didTapLogout(){
+        try? Auth.auth().signOut()
+        if Auth.auth().currentUser == nil{
+            let vc = UINavigationController(rootViewController: OnboardingViewController())
+            vc.modalPresentationStyle = .fullScreen
+            present(vc, animated: true)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
