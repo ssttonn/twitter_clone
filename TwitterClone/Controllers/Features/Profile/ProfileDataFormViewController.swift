@@ -7,8 +7,12 @@
 
 import UIKit
 import PhotosUI
+import Combine
 
 class ProfileDataFormViewController: UIViewController {
+    
+    private let viewModel: ProfileDataFormViewModel = ProfileDataFormViewModel()
+    private var subscriptions: [AnyCancellable] = []
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -95,6 +99,7 @@ class ProfileDataFormViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         button.layer.masksToBounds = true
         button.layer.cornerRadius = 25
+        button.layer.opacity = 0.4
         button.isEnabled = false
         return button
     }()
@@ -111,10 +116,11 @@ class ProfileDataFormViewController: UIViewController {
         scrollView.addSubview(bioTextView)
         scrollView.addSubview(submitButton)
         
-        
+        applyConstraints()
         
         isModalInPresentation = true
         
+        // Delegations
         bioTextView.delegate = self
         displayNameField.delegate = self
         usernameField.delegate = self
@@ -122,8 +128,32 @@ class ProfileDataFormViewController: UIViewController {
         avatarPlaceHolderImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapAvatar)))
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapToDismiss)))
         
+        bindViews()
+    }
+    
+    private func bindViews(){
+        displayNameField.addTarget(self, action: #selector(displayNameFieldDidChange), for: .editingChanged)
+        usernameField.addTarget(self, action: #selector(usernameFieldDidChange), for: .editingChanged)
+        submitButton.addTarget(self, action: #selector(didTapSubmit), for: .touchUpInside)
         
-        applyConstraints()
+        viewModel.$isFormValidated.sink{[weak self] isButtonValidated in
+            self?.submitButton.isEnabled = isButtonValidated
+            self?.submitButton.layer.opacity = isButtonValidated ? 1 : 0.4
+        }.store(in: &subscriptions)
+    }
+    
+    @objc private func displayNameFieldDidChange(){
+        viewModel.displayName = displayNameField.text
+        viewModel.validateForm()
+    }
+    
+    @objc private func usernameFieldDidChange(){
+        viewModel.username = usernameField.text
+        viewModel.validateForm()
+    }
+    
+    @objc private func didTapSubmit(){
+        viewModel.submit()
     }
     
     @objc private func didTapAvatar(){
@@ -223,6 +253,11 @@ extension ProfileDataFormViewController: UITextViewDelegate, UITextFieldDelegate
         }
     }
     
+    func textViewDidChange(_ textView: UITextView) {
+        viewModel.bio = textView.text
+        viewModel.validateForm()
+    }
+    
     func textFieldDidBeginEditing(_ textField: UITextField) {
         scrollView.setContentOffset(CGPoint(x: 0, y: textField.frame.origin.y - 100), animated: true)
     }
@@ -244,6 +279,8 @@ extension ProfileDataFormViewController: PHPickerViewControllerDelegate{
                 
                 DispatchQueue.main.async {
                     self?.avatarPlaceHolderImageView.image = image
+                    self?.viewModel.avatarImage = image
+                    self?.viewModel.validateForm()
                 }
             }
         }
