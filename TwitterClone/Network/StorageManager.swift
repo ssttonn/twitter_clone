@@ -28,4 +28,6 @@ final class StorageManager{
     func uploadProfilePhoto(with id: String, image: Data, metaData: StorageMetadata) -> AnyPublisher<StorageMetadata, Error>{
         return storage.reference().child("images/\(id).jpg").putData(image, metadata: metaData).eraseToAnyPublisher()
     }
+    
+   
 }

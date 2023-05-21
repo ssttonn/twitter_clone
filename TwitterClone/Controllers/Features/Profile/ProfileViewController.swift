@@ -6,10 +6,15 @@
 //
 
 import UIKit
+import Combine
 
 class ProfileViewController: UIViewController {
     
     private var isStatusBarHidden: Bool = true
+    
+    private let viewModel: ProfileViewModel = ProfileViewModel()
+    
+    private var subscriptions: [AnyCancellable] = []
     
     private let statusBar: UIView = {
         let view = UIView()
@@ -26,6 +31,8 @@ class ProfileViewController: UIViewController {
         return tableView
     }()
     
+    private var headerProfileView: ProfileTableViewHeader? = nil
+    
 
     
     override func viewDidLoad() {
@@ -38,13 +45,28 @@ class ProfileViewController: UIViewController {
         profileTableView.delegate = self
         profileTableView.dataSource = self
         
-        let headerView = ProfileTableViewHeader(frame: CGRect(x: 0, y: 0, width: profileTableView.frame.width, height: 380))
+        headerProfileView = ProfileTableViewHeader(frame: CGRect(x: 0, y: 0, width: profileTableView.frame.width, height: 380))
         
-        profileTableView.tableHeaderView = headerView
+        profileTableView.tableHeaderView = headerProfileView
         profileTableView.contentInsetAdjustmentBehavior = .never
         navigationController?.navigationBar.isHidden = true
         
         configureConstraints()
+        
+        bindViews()
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.retrieveUser()
+    }
+    
+    private func bindViews(){
+        viewModel.$user.sink { [weak self] user in
+            guard let user = user else {return}
+            self?.headerProfileView?.configure(with: user)
+        }.store(in: &subscriptions)
     }
     
     private func configureConstraints(){

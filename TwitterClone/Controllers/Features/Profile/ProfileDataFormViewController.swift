@@ -140,6 +140,12 @@ class ProfileDataFormViewController: UIViewController {
             self?.submitButton.isEnabled = isButtonValidated
             self?.submitButton.layer.opacity = isButtonValidated ? 1 : 0.4
         }.store(in: &subscriptions)
+        
+        viewModel.$isUserOnboarded.sink{ [weak self] isUserOnboarded in
+            if isUserOnboarded {
+                self?.dismiss(animated: true)
+            }
+        }.store(in: &subscriptions)
     }
     
     @objc private func displayNameFieldDidChange(){
@@ -153,6 +159,7 @@ class ProfileDataFormViewController: UIViewController {
     }
     
     @objc private func didTapSubmit(){
+        view.endEditing(true)
         viewModel.submit()
     }
     

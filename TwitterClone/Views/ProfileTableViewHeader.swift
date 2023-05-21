@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SDWebImage
 
 enum SectionTabs: String, CaseIterable {
     case tweets = "Tweets"
@@ -206,6 +207,15 @@ class ProfileTableViewHeader: UIView {
         applyConstraints()
         
         configureStackButton()
+    }
+    
+    func configure(with user: TwitterUser){
+        self.displayNameLabel.text = user.displayName
+        self.avatarImageView.sd_setImage(with: URL(string: user.avatarPath))
+        self.usernameLabel.text = user.username
+        self.bioLabel.text = user.bio
+        self.followersCountLabel.text = "\(user.followerCount)"
+        self.followingsCountLabel.text = "\(user.followingCount)"
     }
     
     private func configureStackButton(){

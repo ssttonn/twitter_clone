@@ -26,4 +26,10 @@ class DatabaseManager{
     func retrieveUser(with id: String) -> AnyPublisher<TwitterUser, Error>{
         return db.collection(usersCollectionName).document(id).getDocument().tryMap{ try $0.data(as: TwitterUser.self) }.eraseToAnyPublisher()
     }
+    
+    func updateUserProfile(uid: String, with updatedFields: [String: Any]) -> AnyPublisher<Bool, Error>{
+        return db.collection(usersCollectionName).document(uid).updateData(updatedFields).map{ _ in
+            true
+        }.eraseToAnyPublisher()
+    }
 }
